@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <KJ_BetterVisitorLog>
+            <version>1.0.0</version>
+        </KJ_BetterVisitorLog>
+    </modules>
+
+    <global>
+        <helpers>
+            <kj_bettervisitorlog>
+                <class>KJ_BetterVisitorLog_Helper</class>
+            </kj_bettervisitorlog>
+        </helpers>
+        <models>
+            <kj_bettervisitorlog>
+                <class>KJ_BetterVisitorLog_Model</class>
+                <resourceModel>kj_bettervisitorlog_mysql4</resourceModel>
+            </kj_bettervisitorlog>
+
+            <kj_bettervisitorlog_mysql4>
+                <class>KJ_BetterVisitorLog_Model_Mysql4</class>
+                <entities>
+                    <log>
+                        <table>kj_bettervisitorlog_log</table>
+                    </log>
+                </entities>
+            </kj_bettervisitorlog_mysql4>
+        </models>
+
+        <resources>
+            <kj_bettervisitorlog_setup>
+                <setup>
+                    <module>KJ_BetterVisitorLog</module>
+                    <class>KJ_BetterVisitorLog_Model_Mysql4_Setup</class>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </kj_bettervisitorlog_setup>
+            <kj_bettervisitorlog_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </kj_bettervisitorlog_write>
+            <kj_bettervisitorlog_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </kj_bettervisitorlog_read>
+        </resources>
+
+        <blocks>
+            <kj_bettervisitorlog>
+                <class>KJ_BetterVisitorLog_Block</class>
+            </kj_bettervisitorlog>
+        </blocks>
+    </global>
+
+    <frontend>
+        <layout>
+            <updates>
+                <kj_bettervisitorlog>
+                    <file>kj_bettervisitorlog.xml</file>
+                </kj_bettervisitorlog>
+            </updates>
+        </layout>
+        <routers>
+            <kj_bettervisitorlog>
+                <use>standard</use>
+                <args>
+                    <module>KJ_BetterVisitorLog</module>
+                    <frontName>kjbvl</frontName>
+                </args>
+            </kj_bettervisitorlog>
+        </routers>
+    </frontend>
+
+    <default>
+        <system>
+            <kj_bettervisitorlog>
+                <enable_console_logging>1</enable_console_logging>
+            </kj_bettervisitorlog>
+        </system>
+    </default>
+</config>

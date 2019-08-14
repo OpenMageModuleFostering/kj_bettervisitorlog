@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <system>
+            <groups>
+                <kj_bettervisitorlog>
+                    <label>Better Visitor Log</label>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <sort_order>9999</sort_order>
+                    <expanded>1</expanded>
+                    <comment>
+                        <![CDATA[
+                        <div style="margin-top: -16px; background-color: rgb(231, 239, 239);margin-left: -20px;padding: 9px 3px; padding-right: 11px; margin-right: -20px;">
+                            <a target="_blank" href="https://magemail.co/?utm_source=magento&amp;utm_medium=banner&amp;utm_campaign=better_visitor_logging">
+                                <img src="https://magemail.co/app/skin/images/logo.png" style="
+                                    width: 73px;
+                                    float: left;
+                                    margin-top: -15px;
+                                    margin-left: -11px;
+                                    padding-right: 7px;
+                                    float: right;
+                                    padding-right: 3px;
+                                    padding-top: 14px;
+                                ">
+                            </a>
+                            <a target="_blank" href="https://magemail.co/?utm_source=magento&amp;utm_medium=banner&amp;utm_campaign=better_visitor_logging"
+                                style="color: #333;text-decoration: none;">
+                                    Better Visitor Logging is brought to you by <i>MageMail  - the triggered email app for Magento</i>.
+                            </a>
+                        </div>
+                        ]]>
+                    </comment>
+                    <fields>
+                        <enable_local_logging translate="label">
+                            <label>Log to Database</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>100</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Log each visit to the store.  This will store a lot
+                                of data (technically a metric butt-tonne) if you have
+                                a high-traffic site.
+                            </comment>
+                        </enable_local_logging>
+                        <enable_mixpanel translate="label">
+                            <label>Log to Mixpanel</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>200</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Log visits to Mixpanel.  You'll need to create an account
+                                at mixpanel.com in order to use this.
+                            </comment>
+                        </enable_mixpanel>
+                        <mixpanel_token translate="label">
+                            <label>Mixpanel Token</label>
+                            <sort_order>210</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                You can get this from your Mixpanel account under
+                                Account > Projects > Token.
+                            </comment>
+                        </mixpanel_token>
+                        <enable_console_logging translate="label">
+                            <label>Log to Javascript Console</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>300</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                This will log various things to the javascript console
+                                like when an event is logged locally or to mixpanel.  This
+                                is useful when first installing / testing the extension.
+                            </comment>
+                        </enable_console_logging>
+                    </fields>
+                </kj_bettervisitorlog>
+            </groups>
+        </system>
+    </sections>
+</config>

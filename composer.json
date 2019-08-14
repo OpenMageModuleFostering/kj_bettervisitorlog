@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/KJ_BetterVisitorLog",
+    "type": "magento-module",
+    "license": "ASL",
+    "homepage": "",
+    "description": "Better Visitor Log",
+    "authors": [
+    {
+        "name": "Kalen Jordan",
+        "email": "kalen@magemail.co"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

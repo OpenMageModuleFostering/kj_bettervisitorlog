@@ -1,0 +1,227 @@
+<?php $productId = Mage::helper('kj_bettervisitorlog')->currentProductId(); ?>
+
+<?php if (Mage::helper('kj_bettervisitorlog')->isMixpanelLoggingEnabled() && Mage::helper('kj_bettervisitorlog')->getMixpanelToken()): ?>
+    <!-- start Mixpanel -->
+    <script type="text/javascript">(function(f,b){if(!b.__SV){var a,e,i,g;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+    for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=f.createElement("script");a.type="text/javascript";a.async=!0;a.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";e=f.getElementsByTagName("script")[0];e.parentNode.insertBefore(a,e)}})(document,window.mixpanel||[]);
+    mixpanel.init("<?php echo Mage::helper('kj_bettervisitorlog')->getMixpanelToken(); ?>");</script><!-- end Mixpanel -->
+<?php endif; ?>
+
+<!--[if gte IE 9]><!-->
+<script>
+    KJ_BetterVisitorLog = {
+        init: function() {
+            this.observeEmailBlur();
+            this.logVisitor();
+        },
+
+        isLocalLoggingEnabled: function() {
+            return <?php echo Mage::helper('kj_bettervisitorlog')->isLocalLoggingEnabled() ? "true" : "false"; ?>;
+        },
+
+        isMixpanelLoggingEnabled: function() {
+            return <?php echo Mage::helper('kj_bettervisitorlog')->isMixpanelLoggingEnabled() ? "true" : "false"; ?>;
+        },
+
+        getEmailFromCookie: function() {
+            return Mage.Cookies.get('kjbvl_email');
+        },
+
+        saveEmailToCookie: function(email) {
+            var expires = new Date();
+            this.consoleLog("Saving email to cookie: " + email);
+
+            expires.setYear(expires.getFullYear() + 1);
+            return Mage.Cookies.set('kjbvl_email', email, expires);
+        },
+
+        consoleLog: function(message) {
+            var enabled = <?php echo Mage::helper('kj_bettervisitorlog')->isConsoleLoggingEnabled() ? "true" : "false"; ?>;
+            if (! enabled) {
+                return;
+            }
+
+            if (typeof(console) != 'undefined') {
+                console.log("[Better Visitor Log] " + message);
+            }
+        },
+
+        observeEmailBlur: function() {
+            var self = this;
+
+            Prototype.Selector.select('.validate-email, #login-email').each(function(element) {
+                element.stopObserving('blur');
+                Event.observe(element, 'blur', function(el) {
+                    self._captureEmail(el);
+                });
+            });
+        },
+
+        _captureEmail: function(element) {
+            var email = (typeof element == 'string') ? element : element.target.value;
+            if (email) {
+                if (this.validateEmail(email)) {
+                    this.consoleLog("Email entered and saved to cookie: " + email);
+                    this.saveEmailToCookie(email);
+                } else {
+                    this.consoleLog("Email doesn't look valid: " + email);
+                }
+            }
+        },
+
+        /**
+         * Going with a cheapy email validation for now.  Found a nifty one but it
+         * didn't seem to properly support gmail style + emails:
+         *
+         *     http://stackoverflow.com/questions/46155/validate-email-address-in-javascript
+         */
+        validateEmail: function(email) {
+            return (email.indexOf('@') != -1 && email.indexOf('.') != -1);
+        },
+
+        logVisitor: function() {
+            if (! this.isLocalLoggingEnabled() && ! this.isMixpanelLoggingEnabled()) {
+                this.consoleLog("No logging is enabled");
+                return;
+            }
+
+            var email = this.detectEmail();
+            if (email) {
+                this.saveEmailToCookie(email);
+            } else {
+                email = this.getEmailFromCookie();
+                if (email) {
+                    this.consoleLog("Using email from cookie: " + this.getEmailFromCookie());
+                }
+            }
+
+            if (! email) {
+                this.consoleLog("No email has been detected");
+                return;
+            }
+
+            if (this.isLocalLoggingEnabled()) {
+                this.logLocally();
+            }
+
+            if (this.isMixpanelLoggingEnabled()) {
+                this.logToMixpanel();
+            }
+        },
+
+        logLocally: function() {
+            var self = this;
+
+            var email = this.getEmailFromCookie();
+            var productId = <?php echo ($productId === null) ? "null" : $productId; ?>;
+            var url = '<?php echo Mage::helper('kj_bettervisitorlog')->getAjaxBaseUrl(); ?>/log/view/';
+
+            this.consoleLog("Logging locally");
+            this.consoleLog("Sending ajax request for email: " + email);
+
+            new Ajax.Request(url, {
+                method:     'post',
+                parameters: {
+                    email:      email,
+                    product_id: productId
+                },
+
+                onCreate:   self.fixAjaxRequestHeader,
+                onSuccess: function(transport) {
+                    var data = self._transportToJson(transport);
+                    if (data.success) {
+                        self.consoleLog('Local logging successful');
+                    } else {
+                        self.consoleLog('There was a problem logging locally.  Check the ajax response for more detail.');
+                    }
+                },
+
+                onFailure: function() {
+                    self.consoleLog('There was a problem logging locally.  Check the ajax response for more detail.');
+                }
+            });
+        },
+
+        /**
+         * The prototype ajax request sometimes does weird things without this.
+         */
+        fixAjaxRequestHeader: function(response)
+        {
+            var t = response.transport;
+            t.setRequestHeader = t.setRequestHeader.wrap(function(original, k, v) {
+                if (/^(accept|accept-language|content-language)$/i.test(k))
+                    return original(k, v);
+                if (/^content-type$/i.test(k) &&
+                    /^(application\/x-www-form-urlencoded|multipart\/form-data|text\/plain)(;.+)?$/i.test(v))
+                    return original(k, v);
+                return this;
+            });
+        },
+
+        /**
+         * Sometimes the data object returned from the prototype ajax request is
+         * a little cray.  Prototype - gotta love it.
+         */
+        _transportToJson: function(transport)
+        {
+            if (transport.responseJSON) {
+                return transport.responseJSON;
+            }
+
+            if (transport.responseText) {
+                data = JSON.parse(transport.responseText);
+                return data;
+            }
+
+            return {};
+        },
+
+        logToMixpanel: function() {
+            var email = this.getEmailFromCookie();
+            this.consoleLog("Logging to mixpanel");
+
+            mixpanel.identify(email);
+            mixpanel.people.set({
+                "$email": email
+            });
+
+            mixpanel.track('page viewed', {
+                "page name" : document.title,
+                "product_id": <?php echo ($productId === null) ? "null" : $productId; ?>,
+                "url" : window.location.pathname
+            });
+        },
+
+        getQueryStringParameter: function(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        },
+
+        detectEmail: function() {
+            if (this.getQueryStringParameter('email')) {
+                return this.getQueryStringParameter('email');
+            }
+
+            if (this.getQueryStringParameter('mc_eid')) {
+                return this.getQueryStringParameter('mc_eid');
+            }
+
+            if (this.getQueryStringParameter('mm_recipient')) {
+                return this.getQueryStringParameter('mm_recipient');
+            }
+
+            var loggedInCustomerEmail = '<?php echo Mage::helper('kj_bettervisitorlog')->getLoggedInCustomerEmail(); ?>';
+            if (loggedInCustomerEmail) {
+                return loggedInCustomerEmail;
+            }
+
+            return null;
+        }
+    };
+
+    KJ_BetterVisitorLog.init();
+</script>
+<!--[[endif]><!-->
